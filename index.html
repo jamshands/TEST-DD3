@@ -40,13 +40,11 @@
                 method: "POST",
                 body: formData
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("서버 응답 오류: " + response.status);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
+                if (!data.success) {
+                    alert("오류 발생: " + data.message);  // 🔹 서버 오류 메시지 alert 창에 표시
+                }
                 document.getElementById("result").innerText = data.message;
                 document.getElementById("result").style.color = data.success ? "green" : "red";
             })
