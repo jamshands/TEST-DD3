@@ -24,6 +24,9 @@
     </div>
 
     <script>
+        // 🚀 배포된 Flask API 서버 URL (Render에서 확인한 Live Site URL로 변경)
+        const SERVER_URL = "https://flask-render-b7wq.onrender.com";  
+
         function verify() {
             let fileInput = document.getElementById("imageUpload");
             let file = fileInput.files[0];
@@ -36,11 +39,16 @@
             let formData = new FormData();
             formData.append("image", file);
 
-            fetch("https://flask-render-lsey.onrender.com/verify", {
+            fetch(`${SERVER_URL}/verify`, {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (!data.success) {
                     alert("오류 발생: " + data.message);  // 🔹 서버 오류 메시지 alert 창에 표시
@@ -50,7 +58,7 @@
             })
             .catch(error => {
                 alert("서버 요청 중 오류 발생! " + error.message);
-                console.error(error);
+                console.error("서버 오류 상세:", error);
             });
         }
     </script>
