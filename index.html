@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>인증하기</title>
+    <title>이미지 인증하기</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; }
         .container { width: 100%; max-width: 500px; margin: 20px auto; text-align: left; }
         h2 { margin-bottom: 10px; }
-        .input-group { display: flex; gap: 5px; }
-        input { padding: 8px; width: 150px; border: 1px solid #ccc; border-radius: 4px; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 8px 12px; background-color: black; color: white; border: none; cursor: pointer; border-radius: 4px; }
         button:hover { background-color: gray; }
         #result { margin-top: 10px; font-weight: bold; }
@@ -19,65 +19,42 @@
 <body>
 
     <div class="container">
-        <h2>인증하기</h2>
+        <h2>이미지 인증하기</h2>
         <div class="input-group">
-            <input type="text" id="receiptNumber" placeholder="접수번호 입력">
-            <input type="text" id="winnerName" placeholder="당첨자 이름 입력">
-            <button onclick="verify()">확인</button>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button onclick="verify()">인증하기</button>
         </div>
         <div id="result"></div>  <!-- 결과 메시지 표시 -->
     </div>
 
     <script>
-        const googleSheetUrl = "https://docs.google.com/spreadsheets/d/167pvEhhLpY2oOprw931c_w24QEi0EPXGwxXp7PvNqAg/gviz/tq?tqx=out:json";
-        let excelData = [];
+        function verify() {
+            let fileInput = document.getElementById("imageUpload");
+            let file = fileInput.files[0];
 
-        async function loadExcel() {
-            try {
-                const response = await fetch(googleSheetUrl);
-                const text = await response.text();
-                const jsonData = JSON.parse(text.substring(47, text.length - 2));  // Google Sheets JSON 데이터 정리
-
-                excelData = jsonData.table.rows.map(row => ({
-                    접수번호: row.c[0].v.toString(),  // 첫 번째 컬럼 (접수번호)
-                    이름: row.c[1].v                 // 두 번째 컬럼 (이름)
-                }));
-
-                console.log("엑셀 데이터 로드 완료:", excelData);
-            } catch (error) {
-                console.error("엑셀 데이터 로드 실패", error);
-            }
-        }
-
-        async function verify() {
-            if (excelData.length === 0) {
-                await loadExcel();  // 엑셀 데이터가 없으면 먼저 불러오기
-            }
-
-            const receiptNumber = document.getElementById("receiptNumber").value;
-            const winnerName = document.getElementById("winnerName").value;
-
-            if (receiptNumber === "" || winnerName === "") {
-                alert("접수번호와 이름을 입력하세요.");
+            if (!file) {
+                alert("이미지를 선택해주세요.");
                 return;
             }
 
-            // 🔹 엑셀 데이터와 비교
-            const match = excelData.find(row => 
-                row["접수번호"] == receiptNumber && row["이름"] == winnerName
-            );
+            let formData = new FormData();
+            formData.append("image", file);
 
-            if (match) {
-                document.getElementById("result").innerText = "✅ 인증 성공!";
-                document.getElementById("result").style.color = "green";
-            } else {
-                document.getElementById("result").innerText = "❌ 인증 실패!";
-                document.getElementById("result").style.color = "red";
-            }
+            $.ajax({
+                url: "http://127.0.0.1:5000/verify",  // Flask 서버 주소
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    document.getElementById("result").innerText = response.message;
+                    document.getElementById("result").style.color = response.success ? "green" : "red";
+                },
+                error: function() {
+                    alert("서버 요청 중 오류 발생!");
+                }
+            });
         }
-
-        // 페이지 로드 후 엑셀 미리 불러오기
-        loadExcel();
     </script>
 
 </body>
