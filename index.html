@@ -3,52 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>엑셀 업로드</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>인증하기</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 100%; max-width: 500px; margin: 20px auto; text-align: left; }
+        h2 { margin-bottom: 10px; }
+        .input-group { display: flex; gap: 5px; }
+        input { padding: 8px; width: 150px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 12px; background-color: black; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: gray; }
+    </style>
 </head>
 <body>
-    <h3>📂 엑셀 파일 업로드</h3>
-    <input type="file" id="fileUpload">
-    <button onclick="uploadFile()">📤 업로드</button>
 
-    <h3>📜 입주민 목록</h3>
-    <ul id="residentList"></ul>
+    <div class="container">
+        <h2>인증하기</h2>
+        <div class="input-group">
+            <input type="text" id="receiptNumber" placeholder="접수번호 입력">
+            <input type="text" id="winnerName" placeholder="당첨자 이름 입력">
+            <button onclick="verify()">확인</button>
+        </div>
+    </div>
 
     <script>
-        function uploadFile() {
-            var file = $("#fileUpload")[0].files[0];
-            if (!file) {
-                alert("파일을 선택해주세요.");
+        function verify() {
+            var receiptNumber = document.getElementById("receiptNumber").value;
+            var winnerName = document.getElementById("winnerName").value;
+
+            if (receiptNumber === "" || winnerName === "") {
+                alert("접수번호와 이름을 입력하세요.");
                 return;
             }
 
-            var formData = new FormData();
-            formData.append("file", file);
-
-            $.ajax({
-                url: "https://내서버주소/upload",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    alert(response.message);
-                    loadResidentList();
-                },
-                error: function(xhr) {
-                    alert("파일 업로드 실패: " + xhr.responseText);
-                }
-            });
-        }
-
-        function loadResidentList() {
-            $.get("https://내서버주소/get_list", function(data) {
-                $("#residentList").empty();
-                data.forEach(function(name) {
-                    $("#residentList").append("<li>" + name + "</li>");
-                });
-            });
+            alert("인증 요청이 완료되었습니다.");
+            // 여기에 서버 연동 코드 추가 가능 (예: AJAX 요청)
         }
     </script>
+
 </body>
 </html>
