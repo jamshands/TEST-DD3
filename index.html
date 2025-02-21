@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>인증하기</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; }
         .container { width: 100%; max-width: 500px; margin: 20px auto; text-align: left; }
@@ -29,33 +29,52 @@
     </div>
 
     <script>
-        function verify() {
-            var receiptNumber = document.getElementById("receiptNumber").value;
-            var winnerName = document.getElementById("winnerName").value;
+        const excelUrl = "https://raw.githubusercontent.com/사용자명/저장소명/main/winners.xlsx";  // 여기에 실제 GitHub Raw URL 입력
+
+        let excelData = [];
+
+        async function loadExcel() {
+            const response = await fetch(excelUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+            // 첫 번째 시트 읽기
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            // JSON 형식으로 변환
+            excelData = XLSX.utils.sheet_to_json(sheet);
+        }
+
+        async function verify() {
+            if (excelData.length === 0) {
+                await loadExcel();  // 엑셀 데이터가 없으면 먼저 불러오기
+            }
+
+            const receiptNumber = document.getElementById("receiptNumber").value;
+            const winnerName = document.getElementById("winnerName").value;
 
             if (receiptNumber === "" || winnerName === "") {
                 alert("접수번호와 이름을 입력하세요.");
                 return;
             }
 
-            $.ajax({
-                url: "https://내서버주소/verify",  // Flask 서버 URL
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({ receiptNumber: receiptNumber, winnerName: winnerName }),
-                success: function(response) {
-                    document.getElementById("result").innerText = response.message;
-                    if (response.success) {
-                        document.getElementById("result").style.color = "green";
-                    } else {
-                        document.getElementById("result").style.color = "red";
-                    }
-                },
-                error: function() {
-                    alert("서버 요청 중 오류 발생!");
-                }
-            });
+            // 🔹 엑셀 데이터와 비교
+            const match = excelData.find(row => 
+                row["접수번호"] == receiptNumber && row["이름"] == winnerName
+            );
+
+            if (match) {
+                document.getElementById("result").innerText = "✅ 인증 성공!";
+                document.getElementById("result").style.color = "green";
+            } else {
+                document.getElementById("result").innerText = "❌ 인증 실패!";
+                document.getElementById("result").style.color = "red";
+            }
         }
+
+        // 페이지 로드 후 엑셀 미리 불러오기
+        loadExcel();
     </script>
 
 </body>
