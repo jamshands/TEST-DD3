@@ -40,13 +40,18 @@
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("서버 응답 오류: " + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 document.getElementById("result").innerText = data.message;
                 document.getElementById("result").style.color = data.success ? "green" : "red";
             })
             .catch(error => {
-                alert("서버 요청 중 오류 발생!");
+                alert("서버 요청 중 오류 발생! " + error.message);
                 console.error(error);
             });
         }
