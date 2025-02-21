@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이미지 인증하기</title>
+    <title>이미지 인증</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { width: 100%; max-width: 500px; margin: 20px auto; text-align: left; }
-        h2 { margin-bottom: 10px; }
-        .input-group { display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 8px 12px; background-color: black; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .container { width: 100%; max-width: 400px; margin: auto; }
+        input { margin-top: 10px; }
+        button { margin-top: 10px; padding: 8px 12px; background-color: black; color: white; border: none; cursor: pointer; border-radius: 4px; }
         button:hover { background-color: gray; }
         #result { margin-top: 10px; font-weight: bold; }
     </style>
@@ -19,12 +17,10 @@
 <body>
 
     <div class="container">
-        <h2>이미지 인증하기</h2>
-        <div class="input-group">
-            <input type="file" id="imageUpload" accept="image/*">
-            <button onclick="verify()">인증하기</button>
-        </div>
-        <div id="result"></div>  <!-- 결과 메시지 표시 -->
+        <h2>이미지 인증</h2>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="verify()">인증하기</button>
+        <div id="result"></div>
     </div>
 
     <script>
@@ -40,19 +36,18 @@
             let formData = new FormData();
             formData.append("image", file);
 
-            $.ajax({
-                url: "http://127.0.0.1:5000/verify",  // Flask 서버 주소
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    document.getElementById("result").innerText = response.message;
-                    document.getElementById("result").style.color = response.success ? "green" : "red";
-                },
-                error: function() {
-                    alert("서버 요청 중 오류 발생!");
-                }
+            fetch("https://flask-render-lsey.onrender.com/verify", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = data.message;
+                document.getElementById("result").style.color = data.success ? "green" : "red";
+            })
+            .catch(error => {
+                alert("서버 요청 중 오류 발생!");
+                console.error(error);
             });
         }
     </script>
