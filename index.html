@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>인증하기</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; }
         .container { width: 100%; max-width: 500px; margin: 20px auto; text-align: left; }
@@ -12,6 +13,7 @@
         input { padding: 8px; width: 150px; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 8px 12px; background-color: black; color: white; border: none; cursor: pointer; border-radius: 4px; }
         button:hover { background-color: gray; }
+        #result { margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,6 +25,7 @@
             <input type="text" id="winnerName" placeholder="당첨자 이름 입력">
             <button onclick="verify()">확인</button>
         </div>
+        <div id="result"></div>  <!-- 결과 메시지 표시 -->
     </div>
 
     <script>
@@ -35,8 +38,23 @@
                 return;
             }
 
-            alert("인증 요청이 완료되었습니다.");
-            // 여기에 서버 연동 코드 추가 가능 (예: AJAX 요청)
+            $.ajax({
+                url: "https://내서버주소/verify",  // Flask 서버 URL
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ receiptNumber: receiptNumber, winnerName: winnerName }),
+                success: function(response) {
+                    document.getElementById("result").innerText = response.message;
+                    if (response.success) {
+                        document.getElementById("result").style.color = "green";
+                    } else {
+                        document.getElementById("result").style.color = "red";
+                    }
+                },
+                error: function() {
+                    alert("서버 요청 중 오류 발생!");
+                }
+            });
         }
     </script>
 
